@@ -3,7 +3,7 @@
 // Versionamento automático + notificação de atualização
 // ============================================================
 // >>> PARA ATUALIZAR O APP: mude apenas este número <<<
-var CACHE_VERSION = '1.2';
+var CACHE_VERSION = '1.3';
 var CACHE_NAME = 'nexo-ops-v' + CACHE_VERSION;
 
 var ASSETS = [
