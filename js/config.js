@@ -2,7 +2,7 @@
 // NEXO OPS — Configuração Central
 // ============================================================
 const NEXO = {
-  API_URL: '1IKuB2Zs9VbT6ezkIaRH1YaVM7jhy8SGCPpPj53c6IDg',
+  API_URL: 'https://script.google.com/macros/s/AKfycbyw6oNYLBHXz0DKXCw3UZunQxe9GFkleH6BP8FQ8Dpu1u30c61AJTMQbmExJXgWVkPx/exec',
   API_TOKEN: 'nexo2026_minhalojadigital',
   VERSION: '1.0.0',
   APP_NAME: 'NEXO OPS',
