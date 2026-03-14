@@ -2,7 +2,7 @@
   "name": "NEXO OPS",
   "short_name": "NEXO",
   "description": "Gestão Inteligente — Copiloto operacional do encarregado",
-  "start_url": "/index.html",
+  "start_url": "/nexo-ops/index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0A1628",
