@@ -363,3 +363,5 @@ img { max-width: 100%; display: block; }
 
 /* ---- Toast ---- */
 .nexo-toast { font-family: var(--font); font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+.install-banner { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 320px; padding: 14px; margin-top: 16px; background: rgba(197,163,90,0.1); border: 1px dashed rgba(197,163,90,0.4); border-radius: 10px; cursor: pointer; }
+.install-banner span { font-size: 15px; color: #C5A35A; font-weight: 500; }
