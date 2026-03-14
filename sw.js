@@ -1,56 +1,88 @@
-const CACHE_NAME = 'nexo-ops-v1.0';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/app.css',
-  '/js/config.js',
-  '/js/api.js',
-  '/js/auth.js',
-  '/js/router.js',
-  '/js/utils.js',
-  '/js/pages/login.js',
-  '/js/pages/home.js',
-  '/js/pages/checkin.js',
-  '/js/pages/pessoal.js',
-  '/js/pages/ruptura.js',
-  '/js/pages/quebra.js',
-  '/js/pages/temperatura.js',
-  '/js/pages/dashboard.js',
-  '/js/pages/ocorrencias.js',
-  '/manifest.json',
+// ============================================================
+// NEXO OPS — Service Worker v1.2
+// Versionamento automático + notificação de atualização
+// ============================================================
+// >>> PARA ATUALIZAR O APP: mude apenas este número <<<
+var CACHE_VERSION = '1.2';
+var CACHE_NAME = 'nexo-ops-v' + CACHE_VERSION;
+
+var ASSETS = [
+  '/nexo-ops/',
+  '/nexo-ops/index.html',
+  '/nexo-ops/css/app.css',
+  '/nexo-ops/js/config.js',
+  '/nexo-ops/js/api.js',
+  '/nexo-ops/js/auth.js',
+  '/nexo-ops/js/router.js',
+  '/nexo-ops/js/utils.js',
+  '/nexo-ops/js/pages/login.js',
+  '/nexo-ops/js/pages/home.js',
+  '/nexo-ops/js/pages/checkin.js',
+  '/nexo-ops/js/pages/pessoal.js',
+  '/nexo-ops/js/pages/ruptura.js',
+  '/nexo-ops/js/pages/quebra.js',
+  '/nexo-ops/js/pages/temperatura.js',
+  '/nexo-ops/js/pages/dashboard.js',
+  '/nexo-ops/js/pages/ocorrencias.js',
+  '/nexo-ops/manifest.json',
 ];
 
-self.addEventListener('install', e => {
+// Instala o novo cache
+self.addEventListener('install', function(e) {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll(ASSETS);
+    })
   );
+  // Força ativação imediata (não espera abas fecharem)
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
+// Ativa e limpa caches antigos
+self.addEventListener('activate', function(e) {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys().then(function(keys) {
+      return Promise.all(
+        keys.filter(function(k) { return k !== CACHE_NAME; })
+            .map(function(k) { return caches.delete(k); })
+      );
+    }).then(function() {
+      // Avisa todas as abas que tem versão nova
+      return self.clients.matchAll();
+    }).then(function(clients) {
+      clients.forEach(function(client) {
+        client.postMessage({ type: 'NEXO_UPDATE', version: CACHE_VERSION });
+      });
+    })
   );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', e => {
+// Estratégia: Cache primeiro, depois rede (para assets)
+// Rede sempre para chamadas à API
+self.addEventListener('fetch', function(e) {
+  // Nunca cachear chamadas ao Apps Script
+  if (e.request.url.indexOf('script.google.com') >= 0) return;
+  if (e.request.url.indexOf('googleapis.com') >= 0) return;
   if (e.request.method !== 'GET') return;
-  if (e.request.url.includes('script.google.com')) return;
 
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const fetched = fetch(e.request).then(response => {
+    caches.match(e.request).then(function(cached) {
+      // Busca da rede em paralelo para atualizar cache
+      var fetchPromise = fetch(e.request).then(function(response) {
         if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(e.request, clone);
+          });
         }
         return response;
-      }).catch(() => cached);
+      }).catch(function() {
+        return cached;
+      });
 
-      return cached || fetched;
+      // Retorna cache imediato se disponível, senão espera rede
+      return cached || fetchPromise;
     })
   );
 });
