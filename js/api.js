@@ -37,7 +37,7 @@ const API = {
     var query = '';
     if (params) {
       var parts = [];
-      Object.entries(params).forEach(function(e) { parts.push(e[0] + '=' + encodeURIComponent(e[1])); });
+      Object.entries(params).forEach(function(e) { parts.push(e[0] + '=' + e[1]); });
       query = parts.join('&');
     }
 
