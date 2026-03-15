@@ -1,28 +1,28 @@
 // ============================================================
-// NEXO OPS — Autenticação e Sessão
+// NEXO OPS — Autenticação (Supabase)
+// Mantém mesma interface para as páginas não mudarem
 // ============================================================
 const Auth = {
   _session: null,
 
   init() {
-    const saved = localStorage.getItem('nexo_session');
+    var saved = localStorage.getItem('nexo_session');
     if (saved) {
       try {
         this._session = JSON.parse(saved);
-        const age = Date.now() - (this._session.timestamp || 0);
-        if (age > 12 * 60 * 60 * 1000) {
-          this.logout();
-        }
+        var age = Date.now() - (this._session.timestamp || 0);
+        if (age > 12 * 60 * 60 * 1000) this.logout();
       } catch (e) { this.logout(); }
     }
   },
 
   async login(usuario, senha) {
-    const res = await API.get('LOGIN', { usuario, senha });
+    var res = await API.login(usuario);
     if (res.success) {
       this._session = {
-        ...res.data,
-        timestamp: Date.now(),
+        usuario: res.data.usuario,
+        loja: res.data.loja,
+        timestamp: Date.now()
       };
       localStorage.setItem('nexo_session', JSON.stringify(this._session));
       return { success: true };
@@ -38,9 +38,8 @@ const Auth = {
   },
 
   get isLoggedIn() { return !!this._session; },
-  get user() { return this._session?.usuario || {}; },
-  get loja() { return this._session?.loja || {}; },
-  get lojaId() { return this._session?.loja?.id || ''; },
-  get userId() { return this._session?.usuario?.id || ''; },
-  get sessionToken() { return this._session?.session_token || ''; },
+  get user() { return this._session ? this._session.usuario : {}; },
+  get loja() { return this._session ? this._session.loja : {}; },
+  get lojaId() { return this._session ? this._session.loja.id : ''; },
+  get userId() { return this._session ? this._session.usuario.id : ''; },
 };
