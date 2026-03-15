@@ -481,5 +481,79 @@ const API = {
   },
   _saveQueue() { try { localStorage.setItem('nexo_offline_queue', JSON.stringify(this._queue)); } catch(e){} },
   _loadQueue() { try { this._queue = JSON.parse(localStorage.getItem('nexo_offline_queue') || '[]'); } catch(e){ this._queue = []; } },
-  get pendingCount() { return this._queue.length; }
+  get pendingCount() { return this._queue.length; },
+
+  // ============================================================
+  // CAMADA DE COMPATIBILIDADE
+  // Traduz chamadas API.get('ACTION', params) e API.post('ACTION', payload)
+  // para as funções nativas do Supabase acima.
+  // Assim NENHUMA página precisa ser reescrita.
+  // ============================================================
+  async get(action, params, cacheMin) {
+    var lojaId = (params && params.loja_id) || Auth.lojaId;
+    var dias = (params && params.dias) ? parseInt(params.dias) : 7;
+
+    switch (action) {
+      case 'GET_DASHBOARD':
+        return this.getDashboard(lojaId, dias);
+      case 'GET_PRODUTOS':
+        return this.getProdutosLoja(lojaId);
+      case 'GET_PESSOAS':
+        return this.getPessoasLoja(lojaId);
+      case 'GET_MOTIVOS':
+        return this.getMotivos((params && params.contexto) || '');
+      case 'GET_ACOES_PREDEFINIDAS':
+        return this.getAcoesPredefinidas((params && params.tipo) || '');
+      case 'GET_OCORRENCIAS':
+        return this.getOcorrencias(lojaId, (params && params.status) || '');
+      case 'GET_DADOS_DIA':
+        return this.getDadosDia(lojaId, (params && params.data) || new Date().toISOString().split('T')[0]);
+      case 'GET_REGISTROS':
+        return this.select('registros', { 'loja_id': 'eq.' + lojaId, 'order': 'data.desc' });
+      case 'LOGIN':
+        return this.login((params && params.usuario) || '');
+      default:
+        console.warn('API.get ação desconhecida:', action);
+        return { success: false, error: 'Ação desconhecida: ' + action };
+    }
+  },
+
+  async post(action, payload, params) {
+    var lojaId = (payload && payload.id_loja) || (payload && payload.loja_id) || (params && params.loja_id) || Auth.lojaId;
+    var regId = (payload && payload.id_registro) || Utils.getRegistroHoje();
+
+    switch (action) {
+      case 'SAVE_CHECKIN':
+        return this.saveCheckin({
+          loja_id: payload.id_loja || lojaId,
+          pessoa_id: payload.id_pessoa || Auth.userId,
+          hora_checkin: payload.hora_checkin || '',
+          foto_url: payload.foto_url || '',
+          observacao: payload.observacao || '',
+          geo_lat: payload.geo_lat || '',
+          geo_lng: payload.geo_lng || ''
+        });
+      case 'SAVE_CHECKOUT':
+        return this.saveCheckout(payload.id_registro || regId, payload.hora_checkout || '');
+      case 'SAVE_PRESENCA':
+        return this.savePresenca(payload.id_registro || regId, payload.registros || []);
+      case 'SAVE_DISPONIBILIDADE':
+        return this.saveDisponibilidade(payload.id_registro || regId, payload.produtos || [], lojaId);
+      case 'SAVE_QUEBRA':
+        return this.saveQuebra(payload.id_registro || regId, payload.itens || []);
+      case 'SAVE_TEMPERATURA':
+        return this.saveTemperatura(payload.id_registro || regId, payload);
+      case 'SAVE_PESSOA':
+        return this.savePessoa(payload);
+      case 'SAVE_ACAO_OCORRENCIA':
+        return this.saveAcaoOcorrencia(payload.id_ocorrencia, payload.acao, payload.id_pessoa || Auth.userId);
+      case 'RESOLVER_OCORRENCIA':
+        return this.resolverOcorrencia(payload.id_ocorrencia, payload.motivo_resolucao);
+      case 'UPLOAD_FOTO':
+        return this.uploadFoto(payload.base64, payload.filename);
+      default:
+        console.warn('API.post ação desconhecida:', action);
+        return { success: false, error: 'Ação desconhecida: ' + action };
+    }
+  }
 };
