@@ -8,6 +8,58 @@ const API = {
   _queue: [],
   _online: navigator.onLine,
 
+  // ---- MAPPERS: Supabase lowercase → Frontend UPPERCASE ----
+  // Camada de compatibilidade para que NENHUMA página precise mudar.
+  // Supabase retorna snake_case lowercase; as páginas esperam MAIÚSCULAS.
+  _mapProduto(p) {
+    if (!p) return p;
+    p.ID_PRODUTO = p.id;
+    p.PROTEINA = p.proteina;
+    p.CORTE_PAI = p.corte_pai;
+    p.CLASSIFICACAO = p.classificacao;
+    return p;
+  },
+  _mapPessoa(p) {
+    if (!p) return p;
+    p.ID_PESSOA = p.id;
+    p.NOME = p.nome;
+    p.TIPO = p.tipo;
+    p.CARGO = p.cargo;
+    p.TURNO = p.turno;
+    p.MARCA_TERCEIRO = p.marca_terceiro;
+    return p;
+  },
+  _mapMotivo(m) {
+    if (!m) return m;
+    m.CONTEXTO = m.contexto;
+    m.MOTIVO = m.motivo;
+    return m;
+  },
+  _mapOcorrencia(oc) {
+    if (!oc) return oc;
+    oc.ID_OCORRENCIA = oc.id;
+    oc.TIPO = oc.tipo;
+    oc.STATUS = oc.status;
+    oc.DATA_ABERTURA = oc.data_abertura;
+    oc.DATA_RESOLUCAO = oc.data_resolucao;
+    oc.MOTIVO_RESOLUCAO = oc.motivo_resolucao;
+    oc.DADOS_ACUMULADOS = oc.dados_acumulados;
+    if (oc.acoes) {
+      oc.acoes = oc.acoes.map(function(a) {
+        a.DATA = a.data || a.created_at;
+        a.ACAO_TOMADA = a.acao_tomada;
+        return a;
+      });
+    }
+    return oc;
+  },
+  _mapAcaoPredefinida(a) {
+    if (!a) return a;
+    a.TIPO_OCORRENCIA = a.tipo_ocorrencia;
+    a.ACAO = a.acao;
+    return a;
+  },
+
   _headers() {
     return {
       'apikey': NEXO.SUPABASE_KEY,
@@ -125,7 +177,7 @@ const API = {
   async getProdutosLoja(lojaId) {
     var res = await this.select('loja_produtos', { 'select': 'produto_id,produtos(*)', 'loja_id': 'eq.' + lojaId }, 60);
     if (!res.success) return res;
-    var produtos = res.data.map(function(lp) { return lp.produtos; }).filter(Boolean);
+    var produtos = res.data.map(function(lp) { return lp.produtos; }).filter(Boolean).map(API._mapProduto);
     return { success: true, data: produtos };
   },
 
@@ -135,8 +187,8 @@ const API = {
     return {
       success: true,
       data: {
-        setor: res.data.filter(function(p) { return p.tipo === 'SETOR'; }),
-        terceiros: res.data.filter(function(p) { return p.tipo === 'TERCEIRO'; })
+        setor: res.data.filter(function(p) { return p.tipo === 'SETOR'; }).map(API._mapPessoa),
+        terceiros: res.data.filter(function(p) { return p.tipo === 'TERCEIRO'; }).map(API._mapPessoa)
       }
     };
   },
@@ -144,13 +196,17 @@ const API = {
   async getMotivos(contexto) {
     var params = { 'select': '*' };
     if (contexto) params['contexto'] = 'eq.' + contexto;
-    return this.select('motivos', params, 60);
+    var res = await this.select('motivos', params, 60);
+    if (res.success && res.data) res.data = res.data.map(API._mapMotivo);
+    return res;
   },
 
   async getAcoesPredefinidas(tipo) {
     var params = { 'select': '*' };
     if (tipo) params['tipo_ocorrencia'] = 'eq.' + tipo;
-    return this.select('acoes_predefinidas', params, 60);
+    var res = await this.select('acoes_predefinidas', params, 60);
+    if (res.success && res.data) res.data = res.data.map(API._mapAcaoPredefinida);
+    return res;
   },
 
   async getDadosDia(lojaId, data) {
@@ -294,6 +350,9 @@ const API = {
     ocRes.data.forEach(function(oc) {
       oc.acoes = acoes.filter(function(a) { return a.ocorrencia_id === oc.id; });
     });
+
+    // Aplicar mappers para compatibilidade com as páginas
+    ocRes.data = ocRes.data.map(API._mapOcorrencia);
 
     return {
       success: true, data: ocRes.data,
