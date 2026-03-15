@@ -1,10 +1,10 @@
 // ============================================================
-// NEXO OPS — Configuração Central
+// NEXO OPS — Configuração Central (Supabase)
 // ============================================================
 const NEXO = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbyw6oNYLBHXz0DKXCw3UZunQxe9GFkleH6BP8FQ8Dpu1u30c61AJTMQbmExJXgWVkPx/exec',
-  API_TOKEN: 'nexo2026_minhalojadigital',
-  VERSION: '1.0.0',
+  SUPABASE_URL: 'https://kkjfqltpykkuwshtfhow.supabase.co',
+  SUPABASE_KEY: 'sb_publishable_x-ADwvaQzwBqIRSZuLKsuw_NWPS_qwC',
+  VERSION: '2.0.0',
   APP_NAME: 'NEXO OPS',
 
   TEMP_FAIXAS: {
