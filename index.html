@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="NEXO OPS — Gestão Inteligente para Varejo Alimentar">
 
-  <!-- Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://kkjfqltpykkuwshtfhow.supabase.co; connect-src 'self' https://kkjfqltpykkuwshtfhow.supabase.co; worker-src 'self';">
+  <!-- Content Security Policy — inclui cdn.jsdelivr.net para Supabase SDK -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://kkjfqltpykkuwshtfhow.supabase.co; connect-src 'self' https://kkjfqltpykkuwshtfhow.supabase.co; worker-src 'self';">
 
   <title>NEXO OPS</title>
   <link rel="manifest" href="manifest.json">
@@ -33,10 +33,12 @@
       <p>Carregando NEXO OPS...</p>
     </div>
   </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="env.js"></script>
-<script src="js/config.js"></script>
-  <script src="env.js"></script>       <!-- gerado no build, nunca no repo -->
+
+  <!-- 1. Supabase JS SDK (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 2. Env vars geradas no build — nunca no repo -->
+  <script src="env.js"></script>
+  <!-- 3. Config + app -->
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
@@ -52,7 +54,7 @@
   <script src="js/pages/dashboard.js"></script>
   <script src="js/pages/ocorrencias.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
           .then(function (reg) {
@@ -66,9 +68,12 @@
         });
       }
       API.init();
-      Auth.init();
-      if (Auth.isLoggedIn) { Router.navigate('home'); }
-      else { Router.navigate('login'); }
+      await Auth.init(); // await necessário — verifica sessão existente no Supabase
+      if (Auth.isLoggedIn) {
+        Router.navigate('home');
+      } else {
+        Router.navigate('login');
+      }
     });
   </script>
 </body>
