@@ -1,0 +1,7 @@
+{
+  "buildCommand": "node build-env.js",
+  "outputDirectory": ".",
+  "routes": [
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
