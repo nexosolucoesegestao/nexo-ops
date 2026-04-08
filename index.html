@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="NEXO OPS — Gestão Inteligente para Varejo Alimentar">
 
-  <!-- Content Security Policy — inclui cdn.jsdelivr.net para Supabase SDK -->
+  <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://kkjfqltpykkuwshtfhow.supabase.co; connect-src 'self' https://kkjfqltpykkuwshtfhow.supabase.co; worker-src 'self';">
 
   <title>NEXO OPS</title>
@@ -34,10 +34,16 @@
     </div>
   </div>
 
-  <!-- 1. Supabase JS SDK (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 1. Supabase JS SDK — versão fixa + SRI para proteção Supply Chain -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"
+    integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil"
+    crossorigin="anonymous">
+  </script>
+
   <!-- 2. Env vars geradas no build — nunca no repo -->
   <script src="env.js"></script>
+
   <!-- 3. Config + app -->
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -68,12 +74,9 @@
         });
       }
       API.init();
-      await Auth.init(); // await necessário — verifica sessão existente no Supabase
-      if (Auth.isLoggedIn) {
-        Router.navigate('home');
-      } else {
-        Router.navigate('login');
-      }
+      await Auth.init();
+      if (Auth.isLoggedIn) { Router.navigate('home'); }
+      else { Router.navigate('login'); }
     });
   </script>
 </body>
