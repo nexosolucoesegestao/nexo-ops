@@ -7,25 +7,19 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="NEXO OPS — Gestão Inteligente para Varejo Alimentar">
+
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://kkjfqltpykkuwshtfhow.supabase.co; connect-src 'self' https://kkjfqltpykkuwshtfhow.supabase.co; worker-src 'self';">
+
   <title>NEXO OPS</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="css/app.css">
   <style>
-    .update-banner {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
-      background: #C5A35A; color: #0A1628; padding: 12px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
-      transform: translateY(-100%); transition: transform 0.3s ease;
-    }
+    .update-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 10000; background: #C5A35A; color: #0A1628; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; transform: translateY(-100%); transition: transform 0.3s ease; }
     .update-banner.show { transform: translateY(0); }
-    .update-banner button {
-      background: #0A1628; color: #C5A35A; border: none; border-radius: 6px;
-      padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-    }
+    .update-banner button { background: #0A1628; color: #C5A35A; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   </style>
 </head>
 <body>
@@ -33,7 +27,6 @@
     <span>Nova versão disponível!</span>
     <button onclick="location.reload()">Atualizar</button>
   </div>
-
   <div id="app">
     <div class="loading-state" style="min-height:100vh">
       <div class="spinner"></div>
@@ -41,6 +34,7 @@
     </div>
   </div>
 
+  <script src="env.js"></script>       <!-- gerado no build, nunca no repo -->
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
@@ -55,35 +49,24 @@
   <script src="js/pages/temperatura.js"></script>
   <script src="js/pages/dashboard.js"></script>
   <script src="js/pages/ocorrencias.js"></script>
-
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Registrar Service Worker
+    document.addEventListener('DOMContentLoaded', function () {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
-          .then(function(reg) {
-            // Verifica atualizações a cada 30 min
-            setInterval(function() { reg.update(); }, 30 * 60 * 1000);
+          .then(function (reg) {
+            setInterval(function () { reg.update(); }, 30 * 60 * 1000);
           })
-          .catch(function(err) { console.log('SW error:', err); });
-
-        // Escuta mensagem de atualização do SW
-        navigator.serviceWorker.addEventListener('message', function(event) {
+          .catch(function (err) { console.log('SW error:', err); });
+        navigator.serviceWorker.addEventListener('message', function (event) {
           if (event.data && event.data.type === 'NEXO_UPDATE') {
             document.getElementById('update-banner').classList.add('show');
           }
         });
       }
-
-      // Init
       API.init();
       Auth.init();
-
-      if (Auth.isLoggedIn) {
-        Router.navigate('home');
-      } else {
-        Router.navigate('login');
-      }
+      if (Auth.isLoggedIn) { Router.navigate('home'); }
+      else { Router.navigate('login'); }
     });
   </script>
 </body>
