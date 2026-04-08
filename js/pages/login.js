@@ -1,14 +1,10 @@
 // ============================================================
-// NEXO OPS — Login v1.2
-// Logo limpo + botão instalar PWA
+// NEXO OPS — Login v2.0 (Supabase Auth)
 // ============================================================
-
-// Capturar evento de instalação (precisa estar fora do register)
 var nexoInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   nexoInstallPrompt = e;
-  // Mostrar botão se estiver na tela de login
   var btn = document.getElementById('btnInstalar');
   if (btn) btn.style.display = 'flex';
 });
@@ -22,10 +18,10 @@ Router.register('login', function(app) {
       '</div>' +
       '<form id="loginForm" class="login-form">' +
         '<div class="input-group">' +
-          '<label>Usuário</label>' +
+          '<label>Email</label>' +
           '<div class="input-wrap">' +
             '<svg class="input-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 16.5C2.5 13 5 11 9 11C13 11 15.5 13 15.5 16.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' +
-            '<input type="text" id="loginUser" placeholder="nome.sobrenome" autocomplete="username" autocapitalize="off" required>' +
+            '<input type="email" id="loginUser" placeholder="seu@email.com" autocomplete="email" autocapitalize="off" required>' +
           '</div>' +
         '</div>' +
         '<div class="input-group">' +
@@ -47,47 +43,44 @@ Router.register('login', function(app) {
       '</div>' +
     '</div>';
 
-  // Mostrar botão instalar se o prompt já foi capturado
   if (nexoInstallPrompt) {
     var btnInst = document.getElementById('btnInstalar');
     if (btnInst) btnInst.style.display = 'flex';
   }
 
-  // Evento do botão instalar
   document.getElementById('btnInstalar').addEventListener('click', function() {
     if (nexoInstallPrompt) {
       nexoInstallPrompt.prompt();
       nexoInstallPrompt.userChoice.then(function(result) {
-        if (result.outcome === 'accepted') {
-          Utils.toast('App instalado!', 'success');
-        }
+        if (result.outcome === 'accepted') Utils.toast('App instalado!', 'success');
         nexoInstallPrompt = null;
         document.getElementById('btnInstalar').style.display = 'none';
       });
     }
   });
 
-  // Login
   document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    var btn = document.getElementById('loginBtn');
+    var btn  = document.getElementById('loginBtn');
     var user = document.getElementById('loginUser').value.trim();
-    var pass = document.getElementById('loginPass').value.trim();
+    var pass = document.getElementById('loginPass').value;
 
-    if (!user) { Utils.toast('Informe o usuário', 'warning'); return; }
+    if (!user || !pass) {
+      Utils.toast('Informe email e senha', 'warning');
+      return;
+    }
 
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Entrando...';
 
     var res = await Auth.login(user, pass);
     if (res.success) {
       Utils.toast('Bem-vindo, ' + Auth.user.nome + '!', 'success');
-      // Pré-carregar dados estáticos em background
       API.preloadStaticData();
       Router.navigate('home');
     } else {
       Utils.toast(res.error || 'Erro no login', 'error');
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = 'Entrar';
     }
   });
