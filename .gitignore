@@ -1,0 +1,13 @@
+# Credenciais geradas no build — NUNCA commitar
+env.js
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Node
+node_modules/
