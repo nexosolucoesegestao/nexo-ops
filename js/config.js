@@ -49,3 +49,5 @@
     }
   };
 })();
+// Limpar env do window após uso
+delete window.__NEXO_ENV__;
