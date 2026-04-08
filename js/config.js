@@ -3,7 +3,7 @@
 // ============================================================
 const NEXO = {
   SUPABASE_URL: 'https://kkjfqltpykkuwshtfhow.supabase.co',
-  SUPABASE_KEY: 'sb_publishable_x-ADwvaQzwBqIRSZuLKsuw_NWPS_qwC',
+  SUPABASE_KEY: 'sb_publishable_MvdXO8-wxp4VbAfB2kHmQw_mM_K2nYn',
   VERSION: '2.0.0',
   APP_NAME: 'NEXO OPS',
 
